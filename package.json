@@ -1,0 +1,40 @@
+{
+  "name": "localtech",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview",
+    "lint": "oxlint src",
+    "format": "oxfmt",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "1.31.0",
+    "motion": "^13.2.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "react-router-dom": "^7.18.3",
+    "recharts": "3.8.0",
+    "sonner": "^2.0.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "oxfmt": "0.61.0",
+    "oxlint": "1.76.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "playwright-core": "^1.62.1",
+    "tailwindcss": "4.2.1",
+    "typescript": "5.9.3",
+    "vite": "8.0.13"
+  },
+  "type": "module"
+}
