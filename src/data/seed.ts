@@ -575,7 +575,7 @@ export const initialState: DemoState = {
   ],
   settings: {
     storeName: 'Librería CLIP',
-    owner: 'Martina Ferrero',
+    owner: 'Matías Ferrero',
     location: 'Sunchales, Santa Fe',
     lowStockAlerts: true,
   },

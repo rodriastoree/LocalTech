@@ -8,7 +8,7 @@ Se conservaron el diseño azul/violeta, la navegación lateral con menú móvil,
 
 ## Correcciones y ampliaciones
 
-- Identidad visual consistente: Martina Ferrero, saludo, iniciales MF y configuración. Migración del nombre almacenado sin perder el escenario.
+- Identidad visual consistente: Matías Ferrero, saludo, iniciales MF y configuración. Migración del nombre almacenado sin perder el escenario.
 - Búsqueda común por nombre, categoría y código; tolerancia a tildes y mayúsculas; respuesta sin resultados. El buscador global muestra existencias y permite abrir todos los resultados.
 - Acceso directo del indicador de stock bajo al inventario filtrado. Incluye productos agotados y los que están exactamente en el mínimo.
 - Alertas sincronizadas al vender, reponer, ajustar, crear, editar o eliminar productos.
@@ -42,7 +42,7 @@ La suite `tests/usability.mjs` opera botones, formularios y navegación real en 
 
 Además se prueban límites de venta, cancelación sin afectar stock, reposición, ajustes inválidos, alta/edición/eliminación de productos, migración del nombre, reinicio, uso sin almacenamiento, rutas desconocidas y navegación en anchos de 320, 390, 768 y 1440 px. Se capturan errores y advertencias de consola, así como excepciones de página.
 
-La salida reproducible de la última ejecución se encuentra en `outputs/functional-tests.json`; las capturas están en la misma carpeta. Ejecutar `npm test` vuelve a generarlas en un contexto de navegador aislado, sin alterar los datos de la pestaña de la usuaria.
+La salida reproducible de la última ejecución se encuentra en `outputs/functional-tests.json`; las capturas están en la misma carpeta. Ejecutar `npm test` vuelve a generarlas en un contexto de navegador aislado, sin alterar los datos de la pestaña del usuario.
 
 ## Archivos principales
 

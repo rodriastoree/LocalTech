@@ -253,7 +253,7 @@ export function Help() {
         <h2 className="text-xl font-extrabold">LocalTech acompaña tu rutina</h2>
         <p className="mt-2 max-w-2xl text-sm text-blue-100">
           No necesitás aprender un sistema enorme. Empezá por una tarea y seguí
-          cuando te sientas cómoda. Tus cambios quedan guardados en este
+          cuando te sientas cómodo. Tus cambios quedan guardados en este
           dispositivo.
         </p>
       </div>
@@ -317,7 +317,7 @@ export function Settings() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Propietaria">
+            <Field label="Propietario">
               <input readOnly value={form.owner} className={inputClass} />
             </Field>
             <Field label="Ubicación">
@@ -396,7 +396,7 @@ export function Settings() {
               setForm({
                 ...state.settings,
                 storeName: 'Librería CLIP',
-                owner: 'Martina Ferrero',
+                owner: 'Matías Ferrero',
                 location: 'Sunchales, Santa Fe',
                 lowStockAlerts: true,
               });

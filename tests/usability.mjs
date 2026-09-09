@@ -41,7 +41,7 @@ const nav = async (n) => {
   await page.getByRole('link', { name: n, exact: true }).click();
   await page
     .getByRole('heading', {
-      name: n === 'Inicio' ? 'Hola, Martina' : n,
+      name: n === 'Inicio' ? 'Hola, Matías' : n,
       exact: true,
     })
     .waitFor();
@@ -89,7 +89,7 @@ async function sell() {
 try {
   await page.goto(base);
   await button('Omitir guía').click();
-  await page.getByRole('heading', { name: 'Hola, Martina' }).waitFor();
+  await page.getByRole('heading', { name: 'Hola, Matías' }).waitFor();
   await test('1 — Consultar stock desde el inicio', async () => {
     await findGlobal();
     await dialog().getByText('6', { exact: true }).waitFor();
@@ -134,7 +134,7 @@ try {
   });
   await test('5 — Accesos principales y navegación', async () => {
     for (const [link, heading] of [
-      ['Inicio', 'Hola, Martina'],
+      ['Inicio', 'Hola, Matías'],
       ['Ventas', 'Ventas'],
       ['Inventario', 'Inventario'],
       ['Productos', 'Productos'],
@@ -146,7 +146,7 @@ try {
       await nav(link);
       await page.getByRole('heading', { name: heading, exact: true }).waitFor();
       assert.ok(
-        (await page.locator('body').innerText()).includes('Martina Ferrero'),
+        (await page.locator('body').innerText()).includes('Matías Ferrero'),
       );
     }
   });
@@ -260,7 +260,7 @@ try {
       await page.getByRole('dialog').waitFor({ state: 'hidden' });
     }
     await button('Volver al inicio').click();
-    await page.getByRole('heading', { name: 'Hola, Martina' }).waitFor();
+    await page.getByRole('heading', { name: 'Hola, Matías' }).waitFor();
   });
   await test('10 — Jornada completa sin recargar', async () => {
     await findGlobal();
@@ -365,11 +365,11 @@ try {
     assert.equal(await button('Notificaciones').locator('span').count(), 0);
     await page.evaluate(() => {
       const state = JSON.parse(localStorage.getItem('localtech-demo-state'));
-      state.settings.owner = 'Propietaria anterior';
+      state.settings.owner = 'Propietario anterior';
       localStorage.setItem('localtech-demo-state', JSON.stringify(state));
     });
     await page.reload();
-    await page.getByText('Martina Ferrero', { exact: true }).waitFor();
+    await page.getByText('Matías Ferrero', { exact: true }).waitFor();
     assert.equal((await stored()).sales.length, 42);
     await nav('Configuración');
     await button('Restablecer datos de demostración').click();
@@ -442,7 +442,7 @@ try {
   });
   await test('Extra — Ruta desconocida y almacenamiento no disponible', async () => {
     await page.goto(`${base}#/ruta-inexistente`);
-    await page.getByRole('heading', { name: 'Hola, Martina' }).waitFor();
+    await page.getByRole('heading', { name: 'Hola, Matías' }).waitFor();
     const isolated = await browser.newContext(),
       p = await isolated.newPage();
     attach(p);
@@ -455,7 +455,7 @@ try {
     });
     await p.goto(base);
     await p.getByRole('button', { name: 'Omitir guía' }).click();
-    await p.getByRole('heading', { name: 'Hola, Martina' }).waitFor();
+    await p.getByRole('heading', { name: 'Hola, Matías' }).waitFor();
     await isolated.close();
   });
   assert.deepEqual(issues, []);

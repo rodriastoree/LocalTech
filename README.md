@@ -1,6 +1,6 @@
 # LocalTech — prototipo de librería
 
-Prototipo de interfaz para una prueba de usabilidad con **Martina Ferrero**, propietaria ficticia de Librería CLIP. Funciona con React y Vite, sin backend, API, base de datos, autenticación ni pagos reales.
+Prototipo de interfaz para una prueba de usabilidad con **Matías Ferrero**, propietario ficticio de Librería CLIP. Funciona con React y Vite, sin backend, API, base de datos, autenticación ni pagos reales.
 
 ## Ejecutar
 
@@ -40,7 +40,7 @@ Puede repetirse la venta para demostrar un stock por debajo del mínimo. Reponer
 - 32 productos, 7 categorías, 5 proveedores ficticios y 40 ventas iniciales. Seis productos comienzan con stock bajo o agotado.
 - `src/data/seed.ts` define los datos; las ventas iniciales se ubican en los últimos ocho días al cargar la aplicación.
 - `src/context/Store.tsx` comparte el estado con Context y `useReducer`. Confirmar una venta actualiza ventas, stock, movimientos, actividad y alertas en la misma transición.
-- `localStorage` conserva el escenario en ese navegador. Se migra el nombre guardado a Martina Ferrero sin borrar las ventas ni las existencias. Si el almacenamiento está bloqueado, se conserva el estado en memoria hasta cerrar la pestaña.
+- `localStorage` conserva el escenario en ese navegador. Se migra el nombre guardado a Matías Ferrero sin borrar las ventas ni las existencias. Si el almacenamiento está bloqueado, se conserva el estado en memoria hasta cerrar la pestaña.
 - Dashboard y Reportes calculan totales y gráficos desde las ventas del estado. Las búsquedas admiten nombre, código y categoría, sin distinguir mayúsculas ni tildes.
 - Las alertas activas corresponden a `stock <= minimumStock`, incluido stock cero. Leer un aviso no elimina la necesidad de reposición. La preferencia de avisos controla el contador de notificaciones; los estados del inventario permanecen visibles.
 
