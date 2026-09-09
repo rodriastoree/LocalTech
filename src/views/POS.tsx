@@ -1,20 +1,458 @@
 'use client';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AnimatePresence,motion } from 'motion/react';
-import { ArrowLeft,Check,CircleDollarSign,CreditCard,Minus,Plus,Search,ShoppingBag,Trash2,WalletCards } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import {
+  ArrowLeft,
+  Check,
+  CircleDollarSign,
+  CreditCard,
+  Minus,
+  Plus,
+  Search,
+  ShoppingBag,
+  Trash2,
+  WalletCards,
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { fmt,useStore } from '../context/Store';
-import type { PaymentMethod,Product } from '../types';
+import { matchesProduct } from '../data/helpers';
+import { fmt, useStore } from '../context/Store';
+import type { PaymentMethod, Product } from '../types';
 import { Modal } from '../components/UI';
-const cats=['Todos','Libros','Cuadernos','Escritura','Papelería','Arte','Escolar','Oficina'] as const;
-export default function POS(){
- const {state,sale}=useStore();const nav=useNavigate();const [query,setQuery]=useState('');const [cat,setCat]=useState<(typeof cats)[number]>('Todos');const [cart,setCart]=useState<{product:Product;quantity:number}[]>([]);const [pay,setPay]=useState(false);const [method,setMethod]=useState<PaymentMethod>('Transferencia');const [success,setSuccess]=useState<{id:string;total:number}|null>(null);
- const products=state.products.filter(p=>p.stock>0&&(cat==='Todos'||p.category===cat)&&(p.name+p.code+p.category).toLowerCase().includes(query.toLowerCase()));const total=cart.reduce((a,x)=>a+x.product.price*x.quantity,0);
- const add=(p:Product)=>{setCart(c=>{const x=c.find(i=>i.product.id===p.id);return x?c.map(i=>i.product.id===p.id?{...i,quantity:Math.min(p.stock,i.quantity+1)}:i):[...c,{product:p,quantity:1}]});toast.success(`${p.name} agregado`,{duration:1200})};const qty=(id:string,d:number)=>setCart(c=>c.map(i=>i.product.id===id?{...i,quantity:Math.max(1,Math.min(i.product.stock,i.quantity+d))}:i));const confirm=()=>{const id=sale(cart,method);setPay(false);setSuccess({id,total});setCart([])};
- return <motion.div initial={{opacity:0}} animate={{opacity:1}}><div className="mb-6 flex items-center gap-3"><button onClick={()=>nav('/ventas')} className="grid h-11 w-11 place-items-center rounded-xl border bg-white"><ArrowLeft/></button><div><p className="text-sm font-bold text-blue-600">VENTA RÁPIDA</p><h1 className="text-3xl font-extrabold">Nueva venta</h1><p className="text-sm text-slate-500">Buscá, agregá y cobrá. El stock se actualiza solo.</p></div></div>
- <div className="grid min-h-[calc(100vh-170px)] gap-6 xl:grid-cols-[1fr_420px]"><section><div className="sticky top-24 z-20 rounded-2xl border bg-white p-4 shadow-sm"><div className="relative"><Search className="absolute left-4 top-3.5 text-slate-400"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar por nombre, categoría o código…" className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-base focus:bg-white"/></div><div className="mt-3 flex gap-2 overflow-x-auto pb-1">{cats.map(c=><button key={c} onClick={()=>setCat(c)} className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold ${cat===c?'bg-[#0f2f5f] text-white':'bg-slate-100 text-slate-600'}`}>{c}</button>)}</div></div><div className="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">{products.map(p=><motion.article whileHover={{y:-2}} key={p.id} className="flex flex-col rounded-2xl border bg-white p-4 shadow-sm"><div className="mb-3 flex items-start justify-between"><div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-blue-50 to-violet-100 font-extrabold text-blue-700">{p.name.slice(0,2).toUpperCase()}</div><span className={`rounded-full px-2 py-1 text-[11px] font-bold ${p.stock<=p.minimumStock?'bg-amber-50 text-amber-700':'bg-green-50 text-green-700'}`}>{p.stock} disponibles</span></div><p className="min-h-10 text-sm font-extrabold">{p.name}</p><p className="text-xs text-slate-500">{p.category} · {p.code}</p><div className="mt-4 flex items-center justify-between"><span className="text-lg font-extrabold">{fmt(p.price)}</span><button onClick={()=>add(p)} className="rounded-xl bg-blue-600 px-3 py-2 text-sm font-bold text-white"><Plus className="mr-1 inline" size={17}/>Agregar</button></div></motion.article>)}</div>{!products.length&&<div className="mt-4 rounded-2xl border border-dashed bg-white p-12 text-center"><p className="font-bold">No encontramos resultados para “{query}”.</p><button onClick={()=>{setQuery('');setCat('Todos')}} className="mt-2 text-sm font-bold text-blue-600">Limpiar búsqueda</button></div>}</section>
- <aside className="xl:sticky xl:top-24 xl:self-start"><div className="overflow-hidden rounded-2xl border bg-white shadow-sm"><div className="border-b bg-gradient-to-r from-[#0f2f5f] to-[#312e81] p-5 text-white"><div className="flex items-center justify-between"><div><p className="text-sm text-blue-200">Venta actual</p><h2 className="text-xl font-extrabold">{cart.reduce((a,x)=>a+x.quantity,0)} productos</h2></div><ShoppingBag/></div></div><div className="max-h-[45vh] min-h-56 overflow-auto p-4">{cart.length?<div className="space-y-3"><AnimatePresence>{cart.map(x=><motion.div layout initial={{opacity:0,x:12}} animate={{opacity:1,x:0}} exit={{opacity:0}} key={x.product.id} className="rounded-xl border p-3"><div className="flex justify-between gap-2"><div><p className="text-sm font-bold">{x.product.name}</p><p className="text-xs text-slate-500">{fmt(x.product.price)} c/u</p></div><button aria-label="Eliminar producto" onClick={()=>setCart(c=>c.filter(i=>i.product.id!==x.product.id))} className="text-slate-400 hover:text-red-600"><Trash2 size={17}/></button></div><div className="mt-3 flex items-center justify-between"><div className="flex items-center rounded-lg border"><button aria-label="Restar cantidad" onClick={()=>qty(x.product.id,-1)} className="p-2"><Minus size={15}/></button><span className="min-w-8 text-center text-sm font-bold">{x.quantity}</span><button aria-label="Sumar cantidad" onClick={()=>qty(x.product.id,1)} className="p-2"><Plus size={15}/></button></div><span className="font-extrabold">{fmt(x.product.price*x.quantity)}</span></div></motion.div>)}</AnimatePresence></div>:<div className="grid h-52 place-items-center text-center"><div><ShoppingBag className="mx-auto mb-3 text-slate-300" size={38}/><p className="font-bold">La venta está vacía</p><p className="text-sm text-slate-500">Agregá productos desde el catálogo.</p></div></div>}</div><div className="border-t bg-slate-50 p-5"><div className="mb-2 flex justify-between text-sm text-slate-500"><span>Subtotal</span><span>{fmt(total)}</span></div><div className="mb-5 flex justify-between text-xl font-extrabold"><span>Total</span><span>{fmt(total)}</span></div><button disabled={!cart.length} onClick={()=>setPay(true)} className="h-13 w-full rounded-xl bg-blue-600 font-extrabold text-white shadow-lg shadow-blue-200 disabled:cursor-not-allowed disabled:opacity-40">Cobrar {fmt(total)}</button></div></div></aside></div>
- <Modal open={pay} onClose={()=>setPay(false)} title="Finalizar venta"><p className="mb-4 text-sm text-slate-500">Elegí cómo pagó el cliente. Es una simulación para la demostración.</p><div className="grid gap-3 sm:grid-cols-3">{([['Efectivo',CircleDollarSign],['Transferencia',WalletCards],['Tarjeta',CreditCard]] as const).map(([m,Icon])=><button key={m} onClick={()=>setMethod(m)} className={`rounded-xl border p-4 text-left ${method===m?'border-blue-500 bg-blue-50 ring-3 ring-blue-100':'hover:bg-slate-50'}`}><Icon className={method===m?'text-blue-600':'text-slate-500'} /><p className="mt-2 text-sm font-bold">{m}</p></button>)}</div><div className="my-5 flex justify-between rounded-xl bg-slate-50 p-4"><span className="font-semibold">Total a cobrar</span><span className="text-xl font-extrabold">{fmt(total)}</span></div><button onClick={confirm} className="h-12 w-full rounded-xl bg-blue-600 font-extrabold text-white">Confirmar venta</button></Modal>
- <Modal open={!!success} onClose={()=>{}} title=""><div className="py-4 text-center"><motion.div initial={{scale:0}} animate={{scale:1}} className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-green-100 text-green-600"><Check size={42} strokeWidth={3}/></motion.div><h2 className="mt-5 text-2xl font-extrabold">Venta registrada correctamente</h2><p className="mt-2 text-slate-500">El inventario se actualizó automáticamente.</p><div className="my-6 rounded-2xl bg-slate-50 p-5"><p className="text-sm text-slate-500">Venta #{success?.id}</p><p className="mt-1 text-3xl font-extrabold">{fmt(success?.total||0)}</p><p className="mt-1 text-sm font-bold text-blue-600">{method}</p></div><div className="grid gap-2"><button onClick={()=>setSuccess(null)} className="h-12 rounded-xl bg-blue-600 font-bold text-white">Nueva venta</button><button onClick={()=>nav('/ventas')} className="h-11 rounded-xl border font-bold">Ver comprobante</button><button onClick={()=>nav('/inicio')} className="h-11 text-sm font-bold text-slate-600">Volver al inicio</button></div></div></Modal></motion.div>
+const cats = [
+  'Todos',
+  'Libros',
+  'Cuadernos',
+  'Escritura',
+  'Papelería',
+  'Arte',
+  'Escolar',
+  'Oficina',
+] as const;
+export default function POS() {
+  const { state, sale } = useStore();
+  const nav = useNavigate();
+  const [params] = useSearchParams();
+  const confirming = useRef(false);
+  const [cancel, setCancel] = useState(false);
+  const [query, setQuery] = useState(
+    () =>
+      state.products.find((p) => p.id === params.get('producto'))?.code || '',
+  );
+  const [cat, setCat] = useState<(typeof cats)[number]>('Todos');
+  const [cart, setCart] = useState<{ product: Product; quantity: number }[]>(
+    [],
+  );
+  const [pay, setPay] = useState(false);
+  const [method, setMethod] = useState<PaymentMethod>('Transferencia');
+  const [success, setSuccess] = useState<{ id: string; total: number } | null>(
+    null,
+  );
+  const products = state.products.filter(
+    (p) =>
+      p.stock > 0 &&
+      (cat === 'Todos' || p.category === cat) &&
+      matchesProduct(p, query),
+  );
+  const total = cart.reduce((a, x) => a + x.product.price * x.quantity, 0);
+  const add = (p: Product) => {
+    if ((cart.find((i) => i.product.id === p.id)?.quantity || 0) >= p.stock) {
+      toast.error(`Solo hay ${p.stock} unidades disponibles.`);
+      return;
+    }
+    setCart((c) => {
+      const x = c.find((i) => i.product.id === p.id);
+      return x
+        ? c.map((i) =>
+            i.product.id === p.id
+              ? { ...i, quantity: Math.min(p.stock, i.quantity + 1) }
+              : i,
+          )
+        : [...c, { product: p, quantity: 1 }];
+    });
+    toast.success(`${p.name} agregado`, { duration: 1200 });
+  };
+  const qty = (id: string, d: number) =>
+    setCart((c) =>
+      c.map((i) =>
+        i.product.id === id
+          ? {
+              ...i,
+              quantity: Math.max(1, Math.min(i.product.stock, i.quantity + d)),
+            }
+          : i,
+      ),
+    );
+  const confirm = () => {
+    if (confirming.current) return;
+    confirming.current = true;
+    try {
+      const id = sale(cart, method);
+      setPay(false);
+      setSuccess({ id, total });
+      setCart([]);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo registrar la venta.',
+      );
+    } finally {
+      confirming.current = false;
+    }
+  };
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={cart.length ? 'pb-24 xl:pb-0' : ''}
+    >
+      <div className="mb-6 flex items-center gap-3">
+        <button
+          aria-label="Volver a ventas"
+          onClick={() => (cart.length ? setCancel(true) : nav('/ventas'))}
+          className="grid h-11 w-11 place-items-center rounded-xl border bg-white"
+        >
+          <ArrowLeft />
+        </button>
+        <div>
+          <p className="text-sm font-bold text-blue-600">VENTA RÁPIDA</p>
+          <h1 className="text-3xl font-extrabold">Registrar venta</h1>
+          <p className="text-sm text-slate-500">
+            Buscá, agregá y cobrá. El stock se actualiza solo.
+          </p>
+        </div>
+      </div>
+      <div className="grid min-h-[calc(100vh-170px)] grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <section className="min-w-0">
+          <div className="sticky top-24 z-20 rounded-2xl border bg-white p-4 shadow-sm">
+            <div className="relative">
+              <Search className="absolute left-4 top-3.5 text-slate-400" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar por nombre, categoría o código…"
+                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-base focus:bg-white"
+              />
+            </div>
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {cats.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCat(c)}
+                  className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold ${cat === c ? 'bg-[#0f2f5f] text-white' : 'bg-slate-100 text-slate-600'}`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+            {products.map((p) => (
+              <motion.article
+                whileHover={{ y: -2 }}
+                key={p.id}
+                className="flex flex-col rounded-2xl border bg-white p-4 shadow-sm"
+              >
+                <div className="mb-3 flex items-start justify-between">
+                  <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-blue-50 to-violet-100 font-extrabold text-blue-700">
+                    {p.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <span
+                    className={`rounded-full px-2 py-1 text-[11px] font-bold ${p.stock <= p.minimumStock ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'}`}
+                  >
+                    {p.stock} disponibles
+                  </span>
+                </div>
+                <p className="min-h-10 text-sm font-extrabold">{p.name}</p>
+                <p className="text-xs text-slate-500">
+                  {p.category} · {p.code}
+                </p>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-lg font-extrabold">{fmt(p.price)}</span>
+                  <button
+                    onClick={() => add(p)}
+                    className="rounded-xl bg-blue-600 px-3 py-2 text-sm font-bold text-white"
+                  >
+                    <Plus className="mr-1 inline" size={17} />
+                    Agregar
+                  </button>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+          {!products.length && (
+            <div className="mt-4 rounded-2xl border border-dashed bg-white p-12 text-center">
+              <p className="font-bold">
+                No encontramos resultados para “{query}”.
+              </p>
+              <button
+                onClick={() => {
+                  setQuery('');
+                  setCat('Todos');
+                }}
+                className="mt-2 text-sm font-bold text-blue-600"
+              >
+                Limpiar búsqueda
+              </button>
+            </div>
+          )}
+        </section>
+        <aside
+          id="venta-actual"
+          className="scroll-mt-24 xl:sticky xl:top-24 xl:self-start"
+        >
+          <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+            <div className="border-b bg-gradient-to-r from-[#0f2f5f] to-[#312e81] p-5 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-blue-200">Venta actual</p>
+                  <h2 className="text-xl font-extrabold">
+                    {cart.reduce((a, x) => a + x.quantity, 0)} productos
+                  </h2>
+                </div>
+                <ShoppingBag />
+              </div>
+            </div>
+            <div className="max-h-[45vh] min-h-56 overflow-auto p-4">
+              {cart.length ? (
+                <div className="space-y-3">
+                  <AnimatePresence>
+                    {cart.map((x) => (
+                      <motion.div
+                        layout
+                        initial={{ opacity: 0, x: 12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0 }}
+                        key={x.product.id}
+                        className="rounded-xl border p-3"
+                      >
+                        <div className="flex justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-bold">
+                              {x.product.name}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {fmt(x.product.price)} c/u
+                            </p>
+                          </div>
+                          <button
+                            aria-label="Eliminar producto"
+                            onClick={() =>
+                              setCart((c) =>
+                                c.filter((i) => i.product.id !== x.product.id),
+                              )
+                            }
+                            className="text-slate-400 hover:text-red-600"
+                          >
+                            <Trash2 size={17} />
+                          </button>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="flex items-center rounded-lg border">
+                            <button
+                              disabled={x.quantity <= 1}
+                              aria-label="Restar cantidad"
+                              onClick={() => qty(x.product.id, -1)}
+                              className="p-2"
+                            >
+                              <Minus size={15} />
+                            </button>
+                            <span className="min-w-8 text-center text-sm font-bold">
+                              {x.quantity}
+                            </span>
+                            <button
+                              disabled={x.quantity >= x.product.stock}
+                              aria-label="Sumar cantidad"
+                              onClick={() => qty(x.product.id, 1)}
+                              className="p-2"
+                            >
+                              <Plus size={15} />
+                            </button>
+                          </div>
+                          <span className="font-extrabold">
+                            {fmt(x.product.price * x.quantity)}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="grid h-52 place-items-center text-center">
+                  <div>
+                    <ShoppingBag
+                      className="mx-auto mb-3 text-slate-300"
+                      size={38}
+                    />
+                    <p className="font-bold">La venta está vacía</p>
+                    <p className="text-sm text-slate-500">
+                      Agregá productos desde el catálogo.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="border-t bg-slate-50 p-5">
+              <div className="mb-2 flex justify-between text-sm text-slate-500">
+                <span>Subtotal</span>
+                <span>{fmt(total)}</span>
+              </div>
+              <div className="mb-5 flex justify-between text-xl font-extrabold">
+                <span>Total</span>
+                <span>{fmt(total)}</span>
+              </div>
+              <button
+                disabled={!cart.length}
+                onClick={() => setPay(true)}
+                className="h-13 w-full rounded-xl bg-blue-600 font-extrabold text-white shadow-lg shadow-blue-200 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Revisar venta · {fmt(total)}
+              </button>
+              {cart.length > 0 && (
+                <button
+                  onClick={() => setCancel(true)}
+                  className="mt-3 w-full rounded-xl border py-3 text-sm font-bold"
+                >
+                  Cancelar venta
+                </button>
+              )}
+            </div>
+          </div>
+        </aside>
+      </div>
+      {cart.length > 0 && (
+        <button
+          onClick={() =>
+            document
+              .getElementById('venta-actual')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+          className="fixed inset-x-4 bottom-4 z-30 flex items-center justify-between gap-3 rounded-xl bg-blue-600 px-5 py-4 font-bold text-white shadow-xl xl:hidden"
+        >
+          <span>
+            Ver venta · {cart.reduce((sum, item) => sum + item.quantity, 0)} u.
+          </span>
+          <span>{fmt(total)}</span>
+        </button>
+      )}
+      <Modal open={pay} onClose={() => setPay(false)} title="Finalizar venta">
+        <p className="mb-4 text-sm text-slate-500">
+          Elegí cómo pagó el cliente. Es una simulación para la demostración.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {(
+            [
+              ['Efectivo', CircleDollarSign],
+              ['Transferencia', WalletCards],
+              ['Tarjeta', CreditCard],
+            ] as const
+          ).map(([m, Icon]) => (
+            <button
+              key={m}
+              onClick={() => setMethod(m)}
+              className={`rounded-xl border p-4 text-left ${method === m ? 'border-blue-500 bg-blue-50 ring-3 ring-blue-100' : 'hover:bg-slate-50'}`}
+            >
+              <Icon
+                className={method === m ? 'text-blue-600' : 'text-slate-500'}
+              />
+              <p className="mt-2 text-sm font-bold">{m}</p>
+            </button>
+          ))}
+        </div>
+        <div className="my-5 flex justify-between rounded-xl bg-slate-50 p-4">
+          <span className="font-semibold">Total a cobrar</span>
+          <span className="text-xl font-extrabold">{fmt(total)}</span>
+        </div>
+        <button
+          onClick={confirm}
+          className="h-12 w-full rounded-xl bg-blue-600 font-extrabold text-white"
+        >
+          Confirmar venta
+        </button>
+      </Modal>
+      <Modal
+        open={cancel}
+        onClose={() => setCancel(false)}
+        title="¿Cancelar esta venta?"
+      >
+        <p className="text-sm text-slate-500">
+          Se quitarán los productos de la venta actual. El stock todavía no se
+          modificó.
+        </p>
+        <div className="mt-5 flex justify-end gap-3">
+          <button
+            onClick={() => setCancel(false)}
+            className="rounded-xl border px-4 py-3 font-bold"
+          >
+            Seguir vendiendo
+          </button>
+          <button
+            onClick={() => {
+              setCart([]);
+              setCancel(false);
+              toast.info('Venta cancelada');
+            }}
+            className="rounded-xl bg-red-600 px-4 py-3 font-bold text-white"
+          >
+            Sí, cancelar venta
+          </button>
+        </div>
+      </Modal>
+      <Modal
+        open={!!success}
+        onClose={() => setSuccess(null)}
+        title="Venta completada"
+      >
+        <div className="py-4 text-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-green-100 text-green-600"
+          >
+            <Check size={42} strokeWidth={3} />
+          </motion.div>
+          <h2 className="mt-5 text-2xl font-extrabold">
+            Venta registrada correctamente
+          </h2>
+          <p className="mt-2 text-slate-500">
+            El inventario se actualizó automáticamente.
+          </p>
+          <div className="my-6 rounded-2xl bg-slate-50 p-5">
+            <p className="text-sm text-slate-500">Venta #{success?.id}</p>
+            <p className="mt-1 text-3xl font-extrabold">
+              {fmt(success?.total || 0)}
+            </p>
+            <p className="mt-1 text-sm font-bold text-blue-600">{method}</p>
+          </div>
+          <div className="grid gap-2">
+            <button
+              onClick={() => setSuccess(null)}
+              className="h-12 rounded-xl bg-blue-600 font-bold text-white"
+            >
+              Nueva venta
+            </button>
+            <button
+              onClick={() => nav('/inventario')}
+              className="h-11 rounded-xl border font-bold"
+            >
+              Ver stock actualizado
+            </button>
+            <button
+              onClick={() => nav(`/ventas?venta=${success?.id}`)}
+              className="h-11 rounded-xl border font-bold"
+            >
+              Ver comprobante
+            </button>
+            <button
+              onClick={() => nav('/inicio')}
+              className="h-11 text-sm font-bold text-slate-600"
+            >
+              Volver al inicio
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </motion.div>
+  );
 }

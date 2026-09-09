@@ -10,6 +10,7 @@
     "build": "vite build",
     "start": "vite preview",
     "lint": "oxlint src",
+    "test": "node tests/usability.mjs",
     "format": "oxfmt",
     "typecheck": "tsc --noEmit"
   },

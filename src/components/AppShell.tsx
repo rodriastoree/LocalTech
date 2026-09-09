@@ -2,16 +2,285 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { BarChart3,Bell,BookOpen,ChevronRight,CircleHelp,LayoutDashboard,Menu,Package,Search,Settings,ShoppingCart,Truck,X } from 'lucide-react';
+import {
+  BarChart3,
+  Bell,
+  BookOpen,
+  ChevronRight,
+  CircleHelp,
+  LayoutDashboard,
+  Menu,
+  Package,
+  Search,
+  Settings,
+  ShoppingCart,
+  Truck,
+  X,
+} from 'lucide-react';
+import { matchesProduct } from '../data/helpers';
 import { useStore } from '../context/Store';
 
-const main=[['/inicio','Inicio',LayoutDashboard],['/ventas','Ventas',ShoppingCart],['/inventario','Inventario',Package],['/productos','Productos',BookOpen],['/reportes','Reportes',BarChart3],['/proveedores','Proveedores',Truck]] as const;
-const secondary=[['/ayuda','Ayuda',CircleHelp],['/configuracion','Configuración',Settings]] as const;
-export function AppShell({children}:{children:React.ReactNode}){
- const {state,dispatch}=useStore(); const navigate=useNavigate(); const [menu,setMenu]=useState(false);const [notice,setNotice]=useState(false);const [search,setSearch]=useState('');
- const results=search.length>1?state.products.filter(p=>(p.name+p.code+p.category).toLowerCase().includes(search.toLowerCase())).slice(0,6):[];
- const unread=state.notifications.filter(n=>!n.read).length;
- const side=<><div className="mb-7 flex items-center justify-between"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-500"><BookOpen size={21}/></div><div><div className="text-xl font-extrabold">LocalTech</div><div className="text-[11px] text-blue-200">Gestión simple</div></div></div><button onClick={()=>setMenu(false)} className="lg:hidden"><X/></button></div><div className="mb-5 rounded-2xl border border-white/10 bg-white/8 p-3"><div className="text-sm font-semibold">{state.settings.storeName}</div><div className="text-xs text-blue-200">{state.settings.owner}</div></div><nav className="space-y-1">{main.map(([to,label,Icon])=><NavLink key={to} to={to} onClick={()=>setMenu(false)} className={({isActive})=>`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${isActive?'bg-white text-[#0f2f5f] shadow-sm':'text-blue-100 hover:bg-white/10'}`}><Icon size={19}/>{label}</NavLink>)}</nav><div className="mt-auto space-y-1 border-t border-white/10 pt-4">{secondary.map(([to,label,Icon])=><NavLink key={to} to={to} onClick={()=>setMenu(false)} className={({isActive})=>`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold ${isActive?'bg-white text-[#0f2f5f]':'text-blue-100 hover:bg-white/10'}`}><Icon size={19}/>{label}</NavLink>)}</div></>;
- return <main className="min-h-screen bg-[#f6f8fc] text-[#172033]"><aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-[#0f2f5f] p-5 text-white lg:flex">{side}</aside><AnimatePresence>{menu&&<><motion.button aria-label="Cerrar menú" onClick={()=>setMenu(false)} className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}/><motion.aside initial={{x:-280}} animate={{x:0}} exit={{x:-280}} className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-[#0f2f5f] p-5 text-white lg:hidden">{side}</motion.aside></>}</AnimatePresence>
- <section className="min-w-0 lg:pl-64"><header className="sticky top-0 z-30 flex h-20 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur md:px-8"><button aria-label="Abrir menú" onClick={()=>setMenu(true)} className="grid h-10 w-10 place-items-center rounded-xl border lg:hidden"><Menu size={20}/></button><div className="relative mx-auto w-full max-w-xl"><Search className="absolute left-3 top-3 text-slate-400" size={18}/><input value={search} onChange={e=>setSearch(e.target.value)} aria-label="Búsqueda global" placeholder="Buscar productos por nombre, código o categoría..." className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm focus:bg-white"/>{results.length>0&&<div className="absolute top-13 z-50 w-full rounded-xl border bg-white p-2 shadow-xl">{results.map(p=><button key={p.id} onClick={()=>{void navigate(`/inventario?producto=${p.id}`);setSearch('')}} className="flex w-full items-center justify-between rounded-lg p-3 text-left hover:bg-slate-50"><div><p className="text-sm font-bold">{p.name}</p><p className="text-xs text-slate-500">{p.code} · {p.category}</p></div><ChevronRight size={17}/></button>)}</div>}</div><div className="relative"><button aria-label="Notificaciones" onClick={()=>setNotice(!notice)} className="relative grid h-10 w-10 place-items-center rounded-xl border bg-white"><Bell size={19}/>{unread>0&&<span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">{unread}</span>}</button><AnimatePresence>{notice&&<motion.div initial={{opacity:0,y:-6}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-6}} className="absolute right-0 top-13 z-50 w-[min(390px,calc(100vw-32px))] rounded-2xl border bg-white p-4 shadow-2xl"><div className="mb-3 flex items-center justify-between"><h3 className="font-extrabold">Alertas de stock</h3><span className="text-xs text-slate-500">{unread} sin leer</span></div><div className="max-h-96 space-y-2 overflow-auto">{state.notifications.length?state.notifications.map(n=><button key={n.id} onClick={()=>{dispatch({type:'READ_NOTIFICATION',payload:n.id});void navigate(`/inventario?producto=${n.productId}`);setNotice(false)}} className={`w-full rounded-xl border p-3 text-left ${n.read?'bg-white':'border-amber-200 bg-amber-50'}`}><div className="flex justify-between"><p className="text-sm font-bold">{n.title}</p>{!n.read&&<span className="h-2 w-2 rounded-full bg-blue-600"/>}</div><p className="mt-1 text-sm text-slate-600">{state.products.find(p=>p.id===n.productId)?.name}</p><p className="mt-1 text-xs text-slate-500">{n.message}</p></button>):<p className="py-8 text-center text-sm text-slate-500">No hay alertas activas.</p>}</div></motion.div>}</AnimatePresence></div><div className="hidden h-10 w-10 place-items-center rounded-full bg-blue-100 font-bold text-[#0f2f5f] sm:grid">IZ</div></header><div className="mx-auto max-w-[1500px] p-4 md:p-8">{children}</div></section></main>
+const main = [
+  ['/inicio', 'Inicio', LayoutDashboard],
+  ['/ventas', 'Ventas', ShoppingCart],
+  ['/inventario', 'Inventario', Package],
+  ['/productos', 'Productos', BookOpen],
+  ['/reportes', 'Reportes', BarChart3],
+  ['/proveedores', 'Proveedores', Truck],
+] as const;
+const secondary = [
+  ['/ayuda', 'Guía rápida', CircleHelp],
+  ['/configuracion', 'Configuración', Settings],
+] as const;
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const { state, dispatch } = useStore();
+  const navigate = useNavigate();
+  const [menu, setMenu] = useState(false);
+  const [notice, setNotice] = useState(false);
+  const [search, setSearch] = useState('');
+  const results = search.trim()
+    ? state.products.filter((p) => matchesProduct(p, search)).slice(0, 6)
+    : [];
+  const unread = state.settings.lowStockAlerts
+    ? state.notifications.filter((n) => !n.read).length
+    : 0;
+  const side = (
+    <>
+      <div className="mb-7 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-500">
+            <BookOpen size={21} />
+          </div>
+          <div>
+            <div className="text-xl font-extrabold">LocalTech</div>
+            <div className="text-[11px] text-blue-200">Gestión simple</div>
+          </div>
+        </div>
+        <button
+          aria-label="Cerrar menú"
+          onClick={() => setMenu(false)}
+          className="lg:hidden"
+        >
+          <X />
+        </button>
+      </div>
+      <div className="mb-5 rounded-2xl border border-white/10 bg-white/8 p-3">
+        <div className="text-sm font-semibold">{state.settings.storeName}</div>
+        <div className="text-xs text-blue-200">{state.settings.owner}</div>
+      </div>
+      <nav className="space-y-1">
+        {main.map(([to, label, Icon]) => (
+          <NavLink
+            key={to}
+            to={to}
+            onClick={() => setMenu(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${isActive ? 'bg-white text-[#0f2f5f] shadow-sm' : 'text-blue-100 hover:bg-white/10'}`
+            }
+          >
+            <Icon size={19} />
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+      <div className="mt-auto space-y-1 border-t border-white/10 pt-4">
+        {secondary.map(([to, label, Icon]) => (
+          <NavLink
+            key={to}
+            to={to}
+            onClick={() => setMenu(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold ${isActive ? 'bg-white text-[#0f2f5f]' : 'text-blue-100 hover:bg-white/10'}`
+            }
+          >
+            <Icon size={19} />
+            {label}
+          </NavLink>
+        ))}
+      </div>
+    </>
+  );
+  return (
+    <main className="min-h-screen bg-[#f6f8fc] text-[#172033]">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-[#0f2f5f] p-5 text-white lg:flex">
+        {side}
+      </aside>
+      <AnimatePresence>
+        {menu && (
+          <>
+            <motion.button
+              aria-label="Cerrar menú"
+              onClick={() => setMenu(false)}
+              className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <motion.aside
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-[#0f2f5f] p-5 text-white lg:hidden"
+            >
+              {side}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+      <section className="min-w-0 lg:pl-64">
+        <header className="sticky top-0 z-30 flex h-20 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur md:px-8">
+          <button
+            aria-label="Abrir menú"
+            onClick={() => setMenu(true)}
+            className="grid h-10 w-10 place-items-center rounded-xl border lg:hidden"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="relative mx-auto w-full max-w-xl">
+            <Search
+              className="absolute left-3 top-3 text-slate-400"
+              size={18}
+            />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setSearch('');
+                if (e.key === 'Enter' && search.trim()) {
+                  void navigate(`/inventario?q=${encodeURIComponent(search)}`);
+                  setSearch('');
+                }
+              }}
+              aria-label="Búsqueda global"
+              placeholder="Buscar productos por nombre, código o categoría..."
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm focus:bg-white"
+            />
+            {search.trim() && (
+              <div className="absolute top-13 z-50 w-full rounded-xl border bg-white p-2 shadow-xl">
+                {!results.length && (
+                  <output className="p-3 text-sm text-slate-500">
+                    Sin resultados. Probá otro nombre, código o categoría.
+                  </output>
+                )}
+                {results.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      void navigate(`/inventario?producto=${p.id}`);
+                      setSearch('');
+                    }}
+                    className="flex w-full items-center justify-between rounded-lg p-3 text-left hover:bg-slate-50"
+                  >
+                    <div>
+                      <p className="text-sm font-bold">{p.name}</p>
+                      <p className="text-xs text-slate-500">
+                        {p.code} · {p.category}
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-slate-500">
+                      {p.stock} u.
+                    </span>
+                    <ChevronRight size={17} />
+                  </button>
+                ))}
+                {results.length > 0 && (
+                  <button
+                    onClick={() => {
+                      void navigate(
+                        `/inventario?q=${encodeURIComponent(search)}`,
+                      );
+                      setSearch('');
+                    }}
+                    className="w-full rounded-lg p-3 text-sm font-bold text-blue-600"
+                  >
+                    Ver todos los resultados
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <button
+              aria-label="Notificaciones"
+              onClick={() => setNotice(!notice)}
+              className="relative grid h-10 w-10 place-items-center rounded-xl border bg-white"
+            >
+              <Bell size={19} />
+              {unread > 0 && (
+                <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                  {unread}
+                </span>
+              )}
+            </button>
+            <AnimatePresence>
+              {notice && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="absolute right-0 top-13 z-50 w-[min(390px,calc(100vw-32px))] rounded-2xl border bg-white p-4 shadow-2xl"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="font-extrabold">Alertas de stock</h3>
+                    <span className="text-xs text-slate-500">
+                      {unread} sin leer
+                    </span>
+                  </div>
+                  <div className="max-h-96 space-y-2 overflow-auto">
+                    {state.notifications.length ? (
+                      state.notifications.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => {
+                            dispatch({
+                              type: 'READ_NOTIFICATION',
+                              payload: n.id,
+                            });
+                            void navigate(
+                              `/inventario?producto=${n.productId}`,
+                            );
+                            setNotice(false);
+                          }}
+                          className={`w-full rounded-xl border p-3 text-left ${n.read ? 'bg-white' : 'border-amber-200 bg-amber-50'}`}
+                        >
+                          <div className="flex justify-between">
+                            <p className="text-sm font-bold">{n.title}</p>
+                            {!n.read && (
+                              <span className="h-2 w-2 rounded-full bg-blue-600" />
+                            )}
+                          </div>
+                          <p className="mt-1 text-sm text-slate-600">
+                            {
+                              state.products.find((p) => p.id === n.productId)
+                                ?.name
+                            }
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {n.message}
+                          </p>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="py-8 text-center text-sm text-slate-500">
+                        No hay alertas activas.
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <div className="hidden h-10 w-10 place-items-center rounded-full bg-blue-100 font-bold text-[#0f2f5f] sm:grid">
+            {state.settings.owner
+              .split(' ')
+              .filter(Boolean)
+              .map((n) => n[0])
+              .slice(0, 2)
+              .join('')}
+          </div>
+        </header>
+        <div className="mx-auto max-w-[1500px] p-4 md:p-8">{children}</div>
+      </section>
+    </main>
+  );
 }

@@ -1,22 +1,445 @@
 'use client';
-import { useEffect,useMemo,useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowDown,ArrowUp,Eye,PackagePlus,Pencil,Search,SlidersHorizontal,Truck } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  Eye,
+  PackagePlus,
+  Pencil,
+  Search,
+  SlidersHorizontal,
+  Truck,
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { fmt,statusOf,useStore } from '../context/Store';
-import { Empty,Field,inputClass,Modal,StatusBadge } from '../components/UI';
+import { matchesProduct } from '../data/helpers';
+import { fmt, statusOf, useStore } from '../context/Store';
+import { Empty, Field, inputClass, Modal, StatusBadge } from '../components/UI';
 import type { Product } from '../types';
-export default function Inventory(){
- const {state,restock,dispatch}=useStore();const [params,setParams]=useSearchParams();const [query,setQuery]=useState('');const [status,setStatus]=useState('Todos');const [category,setCategory]=useState('Todas');const [detail,setDetail]=useState<Product|null>(null);const [replenish,setReplenish]=useState<Product|null>(null);const [adjust,setAdjust]=useState<Product|null>(null);const [qty,setQty]=useState(10);const [supplier,setSupplier]=useState('');const [note,setNote]=useState('');const [newStock,setNewStock]=useState(0);
- const categories=['Todas',...new Set(state.products.map(p=>p.category))];
- const filtered=useMemo(()=>state.products.filter(p=>(p.name+p.code).toLowerCase().includes(query.toLowerCase())&&(status==='Todos'||statusOf(p)===status)&&(category==='Todas'||p.category===category)),[state.products,query,status,category]);
- useEffect(()=>{const id=params.get('producto');const rid=params.get('reponer');if(id){setDetail(state.products.find(p=>p.id===id)||null);setParams({})}if(rid){const p=state.products.find(p=>p.id===rid)||null;setReplenish(p);setSupplier(p?.supplierId||'');setParams({})}},[params,state.products,setParams]);
- const openRestock=(p:Product)=>{setReplenish(p);setSupplier(p.supplierId);setQty(10);setNote('')};const saveRestock=()=>{if(!replenish||qty<1)return;restock(replenish.id,qty,supplier,note);toast.success(`Ingreso registrado: +${qty} unidades`);setReplenish(null);setDetail(null)};const saveAdjust=()=>{if(!adjust||newStock<0)return;dispatch({type:'ADJUST',payload:{productId:adjust.id,stock:newStock}});toast.success('Stock ajustado correctamente');setAdjust(null)};
- return <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}><header className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="text-sm font-bold text-blue-600">CONTROL SIMPLE</p><h1 className="text-3xl font-extrabold">Inventario</h1><p className="mt-1 text-slate-500">Qué tenés y qué conviene reponer.</p></div><button onClick={()=>openRestock(state.products[0])} className="h-12 rounded-xl bg-blue-600 px-5 font-bold text-white"><PackagePlus className="mr-2 inline" size={19}/>Registrar ingreso</button></header>
- <div className="mb-5 grid gap-3 rounded-2xl border bg-white p-4 shadow-sm md:grid-cols-[1fr_190px_190px]"><div className="relative"><Search className="absolute left-3 top-3 text-slate-400" size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar por nombre o código..." className="h-11 w-full rounded-xl border bg-slate-50 pl-10 pr-3 text-sm"/></div><select aria-label="Filtrar por estado" value={status} onChange={e=>setStatus(e.target.value)} className={inputClass}><option>Todos</option><option>Disponible</option><option>Stock bajo</option><option>Sin stock</option></select><select aria-label="Filtrar por categoría" value={category} onChange={e=>setCategory(e.target.value)} className={inputClass}>{categories.map(c=><option key={c}>{c}</option>)}</select></div>
- {filtered.length?<div className="overflow-hidden rounded-2xl border bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full min-w-[1050px] text-left"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr>{['Producto','Código','Categoría','Stock actual','Stock mínimo','Estado','Proveedor','Acciones'].map(x=><th key={x} className="px-4 py-3 font-bold">{x}</th>)}</tr></thead><tbody className="divide-y">{filtered.map(p=><tr key={p.id} className="hover:bg-blue-50/30"><td className="px-4 py-4"><p className="text-sm font-bold">{p.name}</p><p className="max-w-xs truncate text-xs text-slate-500">{p.description}</p></td><td className="px-4 py-4 text-sm font-semibold text-slate-600">{p.code}</td><td className="px-4 py-4 text-sm">{p.category}</td><td className="px-4 py-4 text-lg font-extrabold">{p.stock}</td><td className="px-4 py-4 text-sm">{p.minimumStock}</td><td className="px-4 py-4"><StatusBadge product={p}/></td><td className="px-4 py-4 text-sm">{state.suppliers.find(s=>s.id===p.supplierId)?.name}</td><td className="px-4 py-4"><div className="flex gap-2"><button aria-label="Ver detalle" onClick={()=>setDetail(p)} className="grid h-9 w-9 place-items-center rounded-lg border"><Eye size={16}/></button><button onClick={()=>openRestock(p)} className="rounded-lg bg-blue-50 px-3 text-xs font-bold text-blue-700">Reponer</button></div></td></tr>)}</tbody></table></div></div>:<Empty text="No encontramos productos con estos filtros." onClear={()=>{setQuery('');setStatus('Todos');setCategory('Todas')}}/>}
- <Modal open={!!detail} onClose={()=>setDetail(null)} title={detail?.name||'Producto'} size="max-w-2xl">{detail&&<><div className="grid gap-3 sm:grid-cols-3"><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Stock actual</p><p className="text-3xl font-extrabold">{detail.stock}</p><StatusBadge product={detail}/></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Precio de venta</p><p className="text-xl font-extrabold">{fmt(detail.price)}</p><p className="mt-1 text-xs">{detail.code} · {detail.category}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs text-slate-500">Proveedor</p><p className="mt-1 text-sm font-bold">{state.suppliers.find(s=>s.id===detail.supplierId)?.name}</p><p className="mt-1 text-xs">Mínimo: {detail.minimumStock}</p></div></div><h3 className="mb-3 mt-6 font-extrabold">Movimientos recientes</h3><div className="space-y-2">{state.movements.filter(m=>m.productId===detail.id).slice(0,7).map(m=><div key={m.id} className="flex items-center justify-between rounded-xl border p-3"><div className="flex items-center gap-3"><span className={`grid h-9 w-9 place-items-center rounded-lg ${m.quantity>0?'bg-green-50 text-green-600':'bg-blue-50 text-blue-600'}`}>{m.quantity>0?<ArrowUp size={17}/>:<ArrowDown size={17}/>}</span><div><p className="text-sm font-bold">{m.reference}</p><p className="text-xs text-slate-500">{new Date(m.date).toLocaleString('es-AR')}</p></div></div><span className={`font-extrabold ${m.quantity>0?'text-green-600':'text-slate-700'}`}>{m.quantity>0?'+':''}{m.quantity}</span></div>)}{!state.movements.some(m=>m.productId===detail.id)&&<p className="rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">Aún no hay movimientos para mostrar.</p>}</div><div className="mt-6 flex flex-wrap gap-2"><button onClick={()=>{setAdjust(detail);setNewStock(detail.stock)}} className="rounded-xl border px-4 py-3 text-sm font-bold"><SlidersHorizontal className="mr-2 inline" size={17}/>Ajustar stock</button><button onClick={()=>openRestock(detail)} className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white"><PackagePlus className="mr-2 inline" size={17}/>Registrar ingreso</button></div></>}</Modal>
- <Modal open={!!replenish} onClose={()=>setReplenish(null)} title="Registrar ingreso de mercadería">{replenish&&<div className="space-y-4"><div className="rounded-xl bg-blue-50 p-4"><p className="text-sm font-bold">{replenish.name}</p><p className="text-xs text-slate-600">Stock actual: {replenish.stock} · Después del ingreso: {replenish.stock+Math.max(0,qty||0)}</p></div><Field label="Cantidad recibida *"><input type="number" min="1" value={qty} onChange={e=>setQty(Number(e.target.value))} className={inputClass}/></Field><Field label="Proveedor"><select value={supplier} onChange={e=>setSupplier(e.target.value)} className={inputClass}>{state.suppliers.map(s=><option value={s.id} key={s.id}>{s.name}</option>)}</select></Field><Field label="Fecha"><input type="date" defaultValue="2026-09-02" className={inputClass}/></Field><Field label="Observación opcional"><input value={note} onChange={e=>setNote(e.target.value)} placeholder="Ej.: Entrega completa" className={inputClass}/></Field><button onClick={saveRestock} disabled={qty<1} className="h-12 w-full rounded-xl bg-blue-600 font-bold text-white disabled:opacity-40"><Truck className="mr-2 inline" size={18}/>Guardar ingreso</button></div>}</Modal>
- <Modal open={!!adjust} onClose={()=>setAdjust(null)} title="Ajustar stock"><div className="space-y-4"><p className="text-sm text-slate-500">Indicá la cantidad real que contaste en la librería.</p><Field label="Nuevo stock"><input type="number" min="0" value={newStock} onChange={e=>setNewStock(Number(e.target.value))} className={inputClass}/></Field><button onClick={saveAdjust} className="h-12 w-full rounded-xl bg-blue-600 font-bold text-white"><Pencil className="mr-2 inline" size={18}/>Guardar ajuste</button></div></Modal></motion.div>
+export default function Inventory() {
+  const { state, restock, dispatch } = useStore();
+  const nav = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const [query, setQuery] = useState(params.get('q') || '');
+  const [status, setStatus] = useState(
+    params.get('estado') === 'bajo' ? 'Stock bajo' : 'Todos',
+  );
+  const [category, setCategory] = useState('Todas');
+  const [detail, setDetail] = useState<Product | null>(null);
+  const [replenish, setReplenish] = useState<Product | null>(null);
+  const [adjust, setAdjust] = useState<Product | null>(null);
+  const [qty, setQty] = useState(10);
+  const [supplier, setSupplier] = useState('');
+  const [note, setNote] = useState('');
+  const [newStock, setNewStock] = useState(0);
+  const categories = [
+    'Todas',
+    ...new Set(state.products.map((p) => p.category)),
+  ];
+  const filtered = useMemo(
+    () =>
+      state.products.filter(
+        (p) =>
+          matchesProduct(p, query) &&
+          (status === 'Todos' ||
+            (status === 'Stock bajo'
+              ? p.stock <= p.minimumStock
+              : statusOf(p) === status)) &&
+          (category === 'Todas' || p.category === category),
+      ),
+    [state.products, query, status, category],
+  );
+  useEffect(() => {
+    if (params.has('q')) setQuery(params.get('q') || '');
+    if (params.get('estado') === 'bajo') setStatus('Stock bajo');
+    const id = params.get('producto');
+    const rid = params.get('reponer');
+    if (id) {
+      setDetail(state.products.find((p) => p.id === id) || null);
+      setParams({});
+    }
+    if (rid) {
+      const p = state.products.find((p) => p.id === rid) || null;
+      setReplenish(p);
+      setSupplier(p?.supplierId || '');
+      setParams({});
+    }
+  }, [params, state.products, setParams]);
+  const openRestock = (p: Product) => {
+    setReplenish(p);
+    setSupplier(p.supplierId);
+    setQty(10);
+    setNote('');
+  };
+  const saveRestock = () => {
+    if (!replenish) return;
+    if (!Number.isSafeInteger(qty) || qty < 1) {
+      toast.error('Ingresá una cantidad entera mayor a cero.');
+      return;
+    }
+    restock(replenish.id, qty, supplier, note);
+    toast.success(`Ingreso registrado: +${qty} unidades`);
+    setReplenish(null);
+    setDetail(null);
+  };
+  const saveAdjust = () => {
+    if (!adjust) return;
+    if (!Number.isSafeInteger(newStock) || newStock < 0) {
+      toast.error('Ingresá un stock entero igual o mayor a cero.');
+      return;
+    }
+    dispatch({
+      type: 'ADJUST',
+      payload: { productId: adjust.id, stock: newStock },
+    });
+    toast.success('Stock ajustado correctamente');
+    setAdjust(null);
+    setDetail(null);
+  };
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <header className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <p className="text-sm font-bold text-blue-600">CONTROL SIMPLE</p>
+          <h1 className="text-3xl font-extrabold">Inventario</h1>
+          <p className="mt-1 text-slate-500">
+            Qué tenés y qué conviene reponer.
+          </p>
+        </div>
+        <button
+          disabled={!state.products.length}
+          onClick={() => openRestock(state.products[0])}
+          className="h-12 rounded-xl bg-blue-600 px-5 font-bold text-white"
+        >
+          <PackagePlus className="mr-2 inline" size={19} />
+          Registrar ingreso
+        </button>
+      </header>
+      <div className="mb-5 grid gap-3 rounded-2xl border bg-white p-4 shadow-sm md:grid-cols-[1fr_190px_190px]">
+        <div className="relative">
+          <Search className="absolute left-3 top-3 text-slate-400" size={18} />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Buscar productos"
+            placeholder="Buscar por nombre, categoría o código..."
+            className="h-11 w-full rounded-xl border bg-slate-50 pl-10 pr-3 text-sm"
+          />
+        </div>
+        <select
+          aria-label="Filtrar por estado"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className={inputClass}
+        >
+          <option>Todos</option>
+          <option>Disponible</option>
+          <option>Stock bajo</option>
+          <option>Sin stock</option>
+        </select>
+        <select
+          aria-label="Filtrar por categoría"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className={inputClass}
+        >
+          {categories.map((c) => (
+            <option key={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+      {filtered.length ? (
+        <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1050px] text-left">
+              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <tr>
+                  {[
+                    'Producto',
+                    'Código',
+                    'Categoría',
+                    'Stock actual',
+                    'Stock mínimo',
+                    'Estado',
+                    'Proveedor',
+                    'Acciones',
+                  ].map((x) => (
+                    <th key={x} className="px-4 py-3 font-bold">
+                      {x}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {filtered.map((p) => (
+                  <tr key={p.id} className="hover:bg-blue-50/30">
+                    <td className="px-4 py-4">
+                      <p className="text-sm font-bold">{p.name}</p>
+                      <p className="max-w-xs truncate text-xs text-slate-500">
+                        {p.description}
+                      </p>
+                    </td>
+                    <td className="px-4 py-4 text-sm font-semibold text-slate-600">
+                      {p.code}
+                    </td>
+                    <td className="px-4 py-4 text-sm">{p.category}</td>
+                    <td className="px-4 py-4 text-lg font-extrabold">
+                      {p.stock}
+                    </td>
+                    <td className="px-4 py-4 text-sm">{p.minimumStock}</td>
+                    <td className="px-4 py-4">
+                      <StatusBadge product={p} />
+                    </td>
+                    <td className="px-4 py-4 text-sm">
+                      {state.suppliers.find((s) => s.id === p.supplierId)?.name}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex gap-2">
+                        <button
+                          aria-label="Ver detalle"
+                          onClick={() => setDetail(p)}
+                          className="grid h-9 w-9 place-items-center rounded-lg border"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => openRestock(p)}
+                          className="rounded-lg bg-blue-50 px-3 text-xs font-bold text-blue-700"
+                        >
+                          Reponer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <Empty
+          text="No encontramos productos con estos filtros."
+          onClear={() => {
+            setQuery('');
+            setStatus('Todos');
+            setCategory('Todas');
+          }}
+        />
+      )}
+      <Modal
+        open={!!detail}
+        onClose={() => setDetail(null)}
+        title={detail?.name || 'Producto'}
+        size="max-w-2xl"
+      >
+        {detail && (
+          <>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs text-slate-500">Stock actual</p>
+                <p className="text-3xl font-extrabold">{detail.stock}</p>
+                <StatusBadge product={detail} />
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs text-slate-500">Precio de venta</p>
+                <p className="text-xl font-extrabold">{fmt(detail.price)}</p>
+                <p className="mt-1 text-xs">
+                  {detail.code} · {detail.category}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-xs text-slate-500">Proveedor</p>
+                <button
+                  onClick={() =>
+                    nav(`/proveedores?proveedor=${detail.supplierId}`)
+                  }
+                  className="mt-1 text-left text-sm font-bold text-blue-600 underline"
+                >
+                  {
+                    state.suppliers.find((s) => s.id === detail.supplierId)
+                      ?.name
+                  }
+                </button>
+                <p className="mt-1 text-xs">Mínimo: {detail.minimumStock}</p>
+              </div>
+            </div>
+            <h3 className="mb-3 mt-6 font-extrabold">Movimientos recientes</h3>
+            <div className="space-y-2">
+              {state.movements
+                .filter((m) => m.productId === detail.id)
+                .slice(0, 7)
+                .map((m) => (
+                  <div
+                    key={m.id}
+                    className="flex items-center justify-between rounded-xl border p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`grid h-9 w-9 place-items-center rounded-lg ${m.quantity > 0 ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'}`}
+                      >
+                        {m.quantity > 0 ? (
+                          <ArrowUp size={17} />
+                        ) : (
+                          <ArrowDown size={17} />
+                        )}
+                      </span>
+                      <div>
+                        <p className="text-sm font-bold">{m.reference}</p>
+                        <p className="text-xs text-slate-500">
+                          {new Date(m.date).toLocaleString('es-AR')}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`font-extrabold ${m.quantity > 0 ? 'text-green-600' : 'text-slate-700'}`}
+                    >
+                      {m.quantity > 0 ? '+' : ''}
+                      {m.quantity}
+                    </span>
+                  </div>
+                ))}
+              {!state.movements.some((m) => m.productId === detail.id) && (
+                <p className="rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">
+                  Aún no hay movimientos para mostrar.
+                </p>
+              )}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <button
+                disabled={detail.stock === 0}
+                onClick={() => nav(`/nueva-venta?producto=${detail.id}`)}
+                className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white disabled:opacity-40"
+              >
+                Registrar venta
+              </button>
+              <button
+                onClick={() => {
+                  setAdjust(detail);
+                  setNewStock(detail.stock);
+                }}
+                className="rounded-xl border px-4 py-3 text-sm font-bold"
+              >
+                <SlidersHorizontal className="mr-2 inline" size={17} />
+                Ajustar stock
+              </button>
+              <button
+                onClick={() => openRestock(detail)}
+                className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white"
+              >
+                <PackagePlus className="mr-2 inline" size={17} />
+                Registrar ingreso
+              </button>
+            </div>
+          </>
+        )}
+      </Modal>
+      <Modal
+        open={!!replenish}
+        onClose={() => setReplenish(null)}
+        title="Registrar ingreso de mercadería"
+      >
+        {replenish && (
+          <div className="space-y-4">
+            <Field label="Producto">
+              <select
+                value={replenish.id}
+                onChange={(e) => {
+                  const product = state.products.find(
+                    (p) => p.id === e.target.value,
+                  );
+                  if (product) {
+                    setReplenish(product);
+                    setSupplier(product.supplierId);
+                  }
+                }}
+                className={inputClass}
+              >
+                {state.products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name} · {product.code}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <div className="rounded-xl bg-blue-50 p-4">
+              <p className="text-sm font-bold">{replenish.name}</p>
+              <p className="text-xs text-slate-600">
+                Stock actual: {replenish.stock} · Después del ingreso:{' '}
+                {replenish.stock + Math.max(0, qty || 0)}
+              </p>
+            </div>
+            <Field label="Cantidad recibida *">
+              <input
+                type="number"
+                min="1"
+                value={qty}
+                onChange={(e) => setQty(Number(e.target.value))}
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Proveedor">
+              <select
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+                className={inputClass}
+              >
+                {state.suppliers.map((s) => (
+                  <option value={s.id} key={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <p className="text-sm text-slate-500">
+              Fecha del ingreso: {new Date().toLocaleDateString('es-AR')}
+            </p>
+            <Field label="Observación opcional">
+              <input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Ej.: Entrega completa"
+                className={inputClass}
+              />
+            </Field>
+            <button
+              onClick={saveRestock}
+              disabled={!Number.isSafeInteger(qty) || qty < 1}
+              className="h-12 w-full rounded-xl bg-blue-600 font-bold text-white disabled:opacity-40"
+            >
+              <Truck className="mr-2 inline" size={18} />
+              Guardar ingreso
+            </button>
+          </div>
+        )}
+      </Modal>
+      <Modal
+        open={!!adjust}
+        onClose={() => setAdjust(null)}
+        title="Ajustar stock"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-500">
+            Indicá la cantidad real que contaste en la librería.
+          </p>
+          <Field label="Nuevo stock">
+            <input
+              type="number"
+              min="0"
+              value={newStock}
+              onChange={(e) => setNewStock(Number(e.target.value))}
+              className={inputClass}
+            />
+          </Field>
+          <button
+            onClick={saveAdjust}
+            className="h-12 w-full rounded-xl bg-blue-600 font-bold text-white"
+          >
+            <Pencil className="mr-2 inline" size={18} />
+            Guardar ajuste
+          </button>
+        </div>
+      </Modal>
+    </motion.div>
+  );
 }
