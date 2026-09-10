@@ -56,16 +56,19 @@ function Onboarding() {
     setStep(4);
   };
   return (
-    <Modal open onClose={finish} title="Bienvenido a LocalTech" size="max-w-md">
+    <Modal open onClose={finish} title="Bienvenida a LocalTech" size="max-w-md">
       <div className="text-center">
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-blue-100 to-violet-100 text-blue-700">
           <data.icon size={30} />
         </div>
         <p className="mt-5 text-xs font-bold uppercase tracking-wider text-blue-600">
-          Bienvenido · {step + 1} de 3
+          Bienvenida · {step + 1} de 3
         </p>
         <h2 className="mt-2 text-2xl font-extrabold">{data.title}</h2>
         <p className="mt-2 text-slate-500">{data.text}</p>
+        <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-500">
+          Prototipo académico con datos simulados.
+        </p>
         <div className="mt-6 flex gap-2">
           {[0, 1, 2].map((i) => (
             <span

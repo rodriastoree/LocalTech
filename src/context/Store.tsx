@@ -311,7 +311,7 @@ function loadState(): DemoState {
     )
       return syncAlerts(fresh());
     // Migrate the visual identity without losing this device's demonstration data.
-    value.settings.owner = 'Matías Ferrero';
+    value.settings.owner = 'Iliana Zanuzzi';
     return syncAlerts(value);
   } catch {
     return syncAlerts(fresh());

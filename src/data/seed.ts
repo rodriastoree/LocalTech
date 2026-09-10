@@ -575,7 +575,7 @@ export const initialState: DemoState = {
   ],
   settings: {
     storeName: 'Librería CLIP',
-    owner: 'Matías Ferrero',
+    owner: 'Iliana Zanuzzi',
     location: 'Sunchales, Santa Fe',
     lowStockAlerts: true,
   },

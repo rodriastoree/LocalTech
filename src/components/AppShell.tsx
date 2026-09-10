@@ -67,6 +67,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="mb-5 rounded-2xl border border-white/10 bg-white/8 p-3">
         <div className="text-sm font-semibold">{state.settings.storeName}</div>
         <div className="text-xs text-blue-200">{state.settings.owner}</div>
+        <div className="mt-1 text-[11px] text-blue-300">
+          Dueña y encargada · datos simulados
+        </div>
       </div>
       <nav className="space-y-1">
         {main.map(([to, label, Icon]) => (

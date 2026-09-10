@@ -34,7 +34,7 @@ export default function Sales() {
           <p className="text-sm font-bold text-blue-600">REGISTRO CLARO</p>
           <h1 className="text-3xl font-extrabold">Ventas</h1>
           <p className="mt-1 text-slate-500">
-            Todo lo vendido queda guardado automáticamente.
+            Las ventas simuladas quedan guardadas en este dispositivo.
           </p>
         </div>
         <button

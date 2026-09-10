@@ -253,8 +253,12 @@ export function Help() {
         <h2 className="text-xl font-extrabold">LocalTech acompaña tu rutina</h2>
         <p className="mt-2 max-w-2xl text-sm text-blue-100">
           No necesitás aprender un sistema enorme. Empezá por una tarea y seguí
-          cuando te sientas cómodo. Tus cambios quedan guardados en este
+          cuando te sientas cómoda. Tus cambios quedan guardados en este
           dispositivo.
+        </p>
+        <p className="mt-3 max-w-2xl text-xs text-blue-200">
+          Este prototipo académico representa una solución propuesta sobre Odoo
+          Community y utiliza únicamente datos simulados.
         </p>
       </div>
       <Modal
@@ -317,7 +321,7 @@ export function Settings() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Propietario">
+            <Field label="Dueña y encargada">
               <input readOnly value={form.owner} className={inputClass} />
             </Field>
             <Field label="Ubicación">
@@ -358,6 +362,14 @@ export function Settings() {
               />
             </label>
           </div>
+          <div className="rounded-2xl border bg-white p-6">
+            <h2 className="font-extrabold">Base tecnológica propuesta</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              LocalTech se plantea como una adaptación sobre Odoo Community.
+              Este prototipo académico no está conectado a una instalación real
+              y utiliza datos simulados.
+            </p>
+          </div>
           <div className="rounded-2xl border border-red-100 bg-white p-6">
             <h2 className="font-extrabold">Datos de demostración</h2>
             <p className="mt-2 text-sm text-slate-500">
@@ -396,7 +408,7 @@ export function Settings() {
               setForm({
                 ...state.settings,
                 storeName: 'Librería CLIP',
-                owner: 'Matías Ferrero',
+                owner: 'Iliana Zanuzzi',
                 location: 'Sunchales, Santa Fe',
                 lowStockAlerts: true,
               });

@@ -47,7 +47,8 @@ export default function Dashboard() {
             Hola, {state.settings.owner.split(' ')[0]}
           </h1>
           <p className="mt-2 text-slate-500">
-            Así está {state.settings.storeName} hoy.
+            Escenario de demostración de {state.settings.storeName} con datos
+            simulados.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">

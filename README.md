@@ -1,6 +1,8 @@
 # LocalTech — prototipo de librería
 
-Prototipo de interfaz para una prueba de usabilidad con **Matías Ferrero**, propietario ficticio de Librería CLIP. Funciona con React y Vite, sin backend, API, base de datos, autenticación ni pagos reales.
+Prototipo académico de la experiencia propuesta para **Iliana Zanuzzi**, dueña y encargada de Librería CLIP. La solución se plantea como una adaptación sobre **Odoo Community**; este frontend funciona con React y Vite, sin conexión a una instalación real de Odoo, backend, API, base de datos, autenticación ni pagos reales.
+
+Los datos y recorridos son demostrativos. Los perfiles, necesidades e hipótesis todavía deben validarse: no se realizaron entrevistas formales, encuestas reales ni observaciones de campo formales, y no se presentan porcentajes propios como resultados comprobados.
 
 ## Ejecutar
 
@@ -40,7 +42,7 @@ Puede repetirse la venta para demostrar un stock por debajo del mínimo. Reponer
 - 32 productos, 7 categorías, 5 proveedores ficticios y 40 ventas iniciales. Seis productos comienzan con stock bajo o agotado.
 - `src/data/seed.ts` define los datos; las ventas iniciales se ubican en los últimos ocho días al cargar la aplicación.
 - `src/context/Store.tsx` comparte el estado con Context y `useReducer`. Confirmar una venta actualiza ventas, stock, movimientos, actividad y alertas en la misma transición.
-- `localStorage` conserva el escenario en ese navegador. Se migra el nombre guardado a Matías Ferrero sin borrar las ventas ni las existencias. Si el almacenamiento está bloqueado, se conserva el estado en memoria hasta cerrar la pestaña.
+- `localStorage` conserva el escenario en ese navegador. Se migra la identidad guardada a Iliana Zanuzzi sin borrar las ventas ni las existencias. Si el almacenamiento está bloqueado, se conserva el estado en memoria hasta cerrar la pestaña.
 - Dashboard y Reportes calculan totales y gráficos desde las ventas del estado. Las búsquedas admiten nombre, código y categoría, sin distinguir mayúsculas ni tildes.
 - Las alertas activas corresponden a `stock <= minimumStock`, incluido stock cero. Leer un aviso no elimina la necesidad de reposición. La preferencia de avisos controla el contador de notificaciones; los estados del inventario permanecen visibles.
 
@@ -48,6 +50,6 @@ Puede repetirse la venta para demostrar un stock por debajo del mínimo. Reponer
 
 Los datos pertenecen al navegador y al origen utilizado: no se comparten entre dispositivos ni pestañas abiertas. Al salir de Registrar venta, un carrito pendiente no se guarda. Las ventas confirmadas sí se conservan. Los contactos y comprobantes son ficticios; no se envían pedidos, cobran pagos ni emiten facturas. Las tablas se desplazan horizontalmente en pantallas pequeñas.
 
-No se agregaron dependencias ni integraciones externas. El build produce archivos estáticos en `dist/`. El repositorio conserva su configuración previa de alojamiento sin registrar ni publicar servicios nuevos.
+No se agregaron dependencias ni integraciones externas. Odoo Community es la plataforma tecnológica base propuesta, pero el prototipo no se conecta a una instancia real. El build produce archivos estáticos en `dist/`. El repositorio conserva su configuración previa de alojamiento sin registrar ni publicar servicios nuevos.
 
 La auditoría y los resultados están documentados en `docs/validacion.md`.

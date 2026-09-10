@@ -1,4 +1,4 @@
-# Auditoría y validación de LocalTech
+# Auditoría técnica y alineación documental de LocalTech
 
 ## Base auditada
 
@@ -6,9 +6,13 @@ La aplicación activa utiliza `src/main.tsx` y Vite. Ya existían Inicio, Ventas
 
 Se conservaron el diseño azul/violeta, la navegación lateral con menú móvil, tarjetas, tablas, gráficos Recharts, animaciones Motion y notificaciones Sonner. La base ya contaba con Context, reducer, localStorage y datos propios de una librería. No fue necesario reconstruirla.
 
+La fuente funcional canónica define a **Iliana Zanuzzi** como dueña y encargada de Librería CLIP, y a **Odoo Community** como la plataforma base propuesta. La interfaz es un prototipo académico con datos simulados, no una implementación productiva ni una representación de operaciones reales.
+
 ## Correcciones y ampliaciones
 
-- Identidad visual consistente: Matías Ferrero, saludo, iniciales MF y configuración. Migración del nombre almacenado sin perder el escenario.
+- Identidad visual consistente: Iliana Zanuzzi, rol de dueña y encargada, saludo, iniciales IZ y configuración. Migración del nombre almacenado sin perder el escenario.
+- Odoo Community presentado como base tecnológica propuesta, sin afirmar que exista una conexión o implementación real.
+- Datos simulados identificados en la experiencia para evitar que se interpreten como operaciones reales de Librería CLIP.
 - Búsqueda común por nombre, categoría y código; tolerancia a tildes y mayúsculas; respuesta sin resultados. El buscador global muestra existencias y permite abrir todos los resultados.
 - Acceso directo del indicador de stock bajo al inventario filtrado. Incluye productos agotados y los que están exactamente en el mínimo.
 - Alertas sincronizadas al vender, reponer, ajustar, crear, editar o eliminar productos.
@@ -25,7 +29,7 @@ Se conservaron el diseño azul/violeta, la navegación lateral con menú móvil,
 
 La suite `tests/usability.mjs` opera botones, formularios y navegación real en Chrome. Las verificaciones del stock, las alertas y los comprobantes se realizan desde la interfaz; también contrasta los reportes y la persistencia con el estado almacenado.
 
-**Resultado:** los diez escenarios y los cinco grupos adicionales aprobaron en Chrome, tanto sobre Vite como sobre el build estático. TypeScript, lint y build finalizaron correctamente; no se registraron errores ni advertencias de consola durante los recorridos. El acceso móvil al carrito también se verificó después del último ajuste.
+**Resultado técnico:** los diez escenarios y los cinco grupos adicionales aprobaron en Chrome, tanto sobre Vite como sobre el build estático. TypeScript, lint y build finalizaron correctamente; no se registraron errores ni advertencias de consola durante los recorridos. El acceso móvil al carrito también se verificó después del último ajuste. Estas comprobaciones validan el funcionamiento técnico del prototipo, no hipótesis con usuarios reales.
 
 | N.º | Escenario | Evidencia esperada |
 | --- | --- | --- |
@@ -54,4 +58,6 @@ La salida reproducible de la última ejecución se encuentra en `outputs/functio
 
 ## Límites de la demostración
 
-Todo se simula en frontend. No hay backend, autenticación, base de datos, pagos, facturación ni integración con Odoo. El historial inicial es ilustrativo; no pretende reconstruir cada movimiento histórico. Los datos guardados no se sincronizan entre dispositivos. Para comenzar una nueva sesión se recomienda restablecer la demostración desde Configuración.
+Todo se simula en frontend. No hay backend, autenticación, base de datos, pagos, facturación ni conexión con una instancia real de Odoo. Odoo Community es la plataforma base propuesta para una implementación futura. El historial inicial es ilustrativo; no pretende reconstruir cada movimiento histórico. Los datos guardados no se sincronizan entre dispositivos. Para comenzar una nueva sesión se recomienda restablecer la demostración desde Configuración.
+
+No se realizaron entrevistas formales, encuestas reales ni observaciones de campo formales. Los perfiles, recorridos, necesidades y escenarios son hipótesis de diseño pendientes de validación; no constituyen resultados de investigación ni porcentajes propios comprobados.

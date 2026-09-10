@@ -76,7 +76,7 @@ export default function Reports() {
         <p className="text-sm font-bold text-blue-600">DECISIONES CON CALMA</p>
         <h1 className="text-3xl font-extrabold">Reportes</h1>
         <p className="mt-1 text-slate-500">
-          Información clara para tomar mejores decisiones.
+          Información calculada con los datos simulados de esta demostración.
         </p>
       </header>
       <div className="mb-5 flex w-fit max-w-full flex-wrap rounded-xl border bg-white p-1">
